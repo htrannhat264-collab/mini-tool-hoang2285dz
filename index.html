@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Mini Tool – Hoàng2285dz</title>
+
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+        font-family: Arial;
+    }
+
+    /* GAME */
+    #gameFrame {
+        width: 100vw;
+        height: 100vh;
+        border: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1;
+    }
+
+    /* POPUP HẾT KEY */
+    #popupEnd {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 260px;
+        padding: 20px;
+        background: rgba(0,0,0,0.85);
+        border: 2px solid #00ff00;
+        border-radius: 18px;
+        text-align: center;
+        color: #00ff00;
+        font-size: 15px;
+        display: none;
+        z-index: 999999;
+        animation: glow 1s infinite;
+    }
+    @keyframes glow {
+        0% { box-shadow: 0 0 5px #00ff00; }
+        50% { box-shadow: 0 0 15px #00ff00; }
+        100% { box-shadow: 0 0 5px #00ff00; }
+    }
+
+    /* NHẬP KEY */
+    #keyBox {
+        position: fixed;
+        top: 30%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 260px;
+        padding: 20px;
+        background: rgba(0,0,0,0.8);
+        border: 2px solid #00ff00;
+        border-radius: 15px;
+        text-align: center;
+        color: white;
+        z-index: 9999;
+    }
+    #keyInput {
+        width: 90%;
+        padding: 8px;
+        border-radius: 8px;
+        border: none;
+        margin-top: 10px;
+        text-align: center;
+        background: #111;
+        color: #0f0;
+    }
+    #btnCheckKey {
+        margin-top: 12px;
+        padding: 8px 15px;
+        border: none;
+        background: #00ff00;
+        color: black;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    /* TOOL CHUNG */
+    .toolBox {
+        position: fixed;
+        top: 20px;
+        width: 160px;
+        padding: 10px;
+        background: rgba(0,0,0,0.75);
+        border: 2px solid #00ff00;
+        border-radius: 12px;
+        color: white;
+        z-index: 99999;
+        display: none;
+        backdrop-filter: blur(5px);
+    }
+    #toolMD5 { left: 10px; }
+    #toolXanh { right: 10px; }
+
+    .title {
+        text-align: center;
+        color: #00ff00;
+        font-weight: bold;
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+
+    .minBtn {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: #00ff00;
+        padding: 3px 7px;
+        border-radius: 50%;
+        cursor: pointer;
+        color: black;
+        font-weight: bold;
+    }
+
+</style>
+</head>
+
+<body>
+
+<!-- GAME -->
+<iframe id="gameFrame" src="https://68gbvn25.cam/?code=20266580"></iframe>
+
+<!-- POPUP HẾT KEY -->
+<div id="popupEnd">
+    🔒 KEY ĐÃ HẾT HẠN<br><br>
+    Liên hệ Admin:<br>
+    <b>@tranhoang2285</b>
+</div>
+
+<!-- NHẬP KEY -->
+<div id="keyBox">
+    <div style="color:#00ff00; font-size:18px; font-weight:bold;">Nhập KEY Kích Hoạt</div>
+    <input id="keyInput" placeholder="Nhập key tại đây">
+    <button id="btnCheckKey">Kích hoạt</button>
+</div>
+
+<!-- TOOL MD5 -->
+<div id="toolMD5" class="toolBox">
+    <div class="minBtn" onclick="toggleMini('toolMD5')">-</div>
+    <div class="title">TOOL MD5</div>
+    <div>MD5: <span id="md5Hash">--</span></div>
+    <div>Kết quả: <span id="md5KQ">--</span></div>
+    <div>Tin cậy: <span id="md5Rate">--</span>%</div>
+</div>
+
+<!-- TOOL BÀN XANH -->
+<div id="toolXanh" class="toolBox">
+    <div class="minBtn" onclick="toggleMini('toolXanh')">-</div>
+    <div class="title">BÀN XANH</div>
+    <div>Dự đoán: <span id="xanhKQ">--</span></div>
+    <div>Độ chuẩn: <span id="xanhRate">--</span>%</div>
+</div>
+
+<script>
+/* ==============================
+   KIỂM TRA KEY KÍCH HOẠT
+=================================*/
+document.getElementById("btnCheckKey").onclick = function () {
+    let key = document.getElementById("keyInput").value.trim();
+    let data = JSON.parse(localStorage.getItem("KEY_LIST") || "{}");
+
+    if (!data[key]) {
+        alert("❌ KEY không tồn tại!");
+        return;
+    }
+
+    let now = Date.now();
+    if (now > data[key].expire) {
+        alert("❌ KEY đã hết hạn!");
+        return;
+    }
+
+    // MỞ TOOL
+    document.getElementById("keyBox").style.display = "none";
+    document.getElementById("toolMD5").style.display = "block";
+    document.getElementById("toolXanh").style.display = "block";
+
+    autoMD5();
+    autoXanh();
+    checkExpireLoop(key);
+};
+
+/* ==============================
+   AUTO MD5 – 60 GIÂY
+=================================*/
+function autoMD5() {
+    function run() {
+        let md5 = Math.random().toString(16).substring(2, 10);
+        let num = parseInt(md5, 16);
+        let kq = (num % 2 === 0) ? "Tài" : "Xỉu";
+        let rate = 60 + Math.floor(Math.random() * 35);
+
+        document.getElementById("md5Hash").innerText = md5;
+        document.getElementById("md5KQ").innerText = kq;
+        document.getElementById("md5Rate").innerText = rate;
+    }
+    run();
+    setInterval(run, 60000);
+}
+
+/* ==============================
+   AUTO BÀN XANH – 60 GIÂY
+=================================*/
+function autoXanh() {
+    function run() {
+        let kq = Math.random() < 0.55 ? "Tài" : "Xỉu";
+        let rate = 65 + Math.floor(Math.random() * 30);
+
+        document.getElementById("xanhKQ").innerText = kq;
+        document.getElementById("xanhRate").innerText = rate;
+    }
+    run();
+    setInterval(run, 60000);
+}
+
+/* ==============================
+   KIỂM TRA KEY HẾT HẠN
+=================================*/
+function checkExpireLoop(key) {
+    setInterval(() => {
+        let data = JSON.parse(localStorage.getItem("KEY_LIST") || "{}");
+        if (!data[key]) return;
+
+        if (Date.now() >= data[key].expire) {
+            document.getElementById("popupEnd").style.display = "block";
+            document.getElementById("toolMD5").style.display = "none";
+            document.getElementById("toolXanh").style.display = "none";
+            document.getElementById("keyBox").style.display = "block";
+        }
+    }, 1000);
+}
+
+/* ==============================
+   THU NHỎ TOOL
+=================================*/
+function toggleMini(id) {
+    let box = document.getElementById(id);
+    box.style.height = box.style.height === "25px" ? "auto" : "25px";
+}
+
+</script>
+
+</body>
+</html>
